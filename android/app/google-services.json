@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747567749375",
+    "project_id": "list-u-4170",
+    "storage_bucket": "list-u-4170.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747567749375:android:3a8b2a554dd9b6805bd4ca",
+        "android_client_info": {
+          "package_name": "com.ulsodev.ListU"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByPuI0ycdEVapEUPJZ8BNWopJLAfP5i7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
