@@ -38,6 +38,12 @@ dependencies:
   # --- TAMBAHKAN 2 BARIS INI ---
   google_fonts: ^6.1.0
   font_awesome_flutter: ^10.6.0
+  
+  # Firebase & Authentication
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.2
+  google_sign_in: ^6.2.2
+  flutter_facebook_auth: ^7.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
