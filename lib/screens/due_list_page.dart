@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/due_item.dart';
+import '../services/storage_service.dart';
 import 'add_due_page.dart';
 
 class DueListPage extends StatefulWidget {
@@ -28,14 +29,13 @@ class _DueListPageState extends State<DueListPage> {
   void _addNewDue() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddDuePage(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddDuePage()),
     );
 
     if (result != null && result is DueItem) {
+      await StorageService.addDue(result);
       setState(() {
-        _items.add(result);
+        _items = StorageService.getAllDues();
       });
       widget.onUpdate(_items);
     }
@@ -72,10 +72,7 @@ class _DueListPageState extends State<DueListPage> {
                   const SizedBox(height: 20),
                   Text(
                     'No due items yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey[400]),
                   ),
                 ],
               ),
@@ -149,18 +146,22 @@ class _DueListPageState extends State<DueListPage> {
                 const SizedBox(height: 5),
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 14, color: Colors.grey[400]),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 14,
+                      color: Colors.grey[400],
+                    ),
                     const SizedBox(width: 5),
                     Text(
                       item.dueDate,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                     const SizedBox(width: 15),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: priorityColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
@@ -181,9 +182,10 @@ class _DueListPageState extends State<DueListPage> {
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),
-            onPressed: () {
+            onPressed: () async {
+              await StorageService.deleteDue(index);
               setState(() {
-                _items.removeAt(index);
+                _items = StorageService.getAllDues();
               });
               widget.onUpdate(_items);
             },
