@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/todo_item.dart';
 import '../models/due_item.dart';
 import '../models/note_item.dart';
+import '../services/storage_service.dart';
 import 'due_list_page.dart';
 import 'notes_list_page.dart';
 
@@ -21,9 +22,23 @@ class _DashboardPageState extends State<DashboardPage> {
   List<NoteItem> noteItems = [];
 
   @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    setState(() {
+      upcomingTodos = StorageService.getAllTodos();
+      dueItems = StorageService.getAllDues();
+      noteItems = StorageService.getAllNotes();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     String displayName = widget.userName ?? 'User';
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -51,10 +66,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 // Greeting
                 Text(
                   'Hey $displayName',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey[500]),
                 ),
                 const SizedBox(height: 5),
                 const Text(
@@ -73,7 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     _buildCategoryButton('Personal', const Color(0xFF38F9D7)),
                     _buildCategoryButton('Work', const Color(0xFF43E97B)),
                     _buildCategoryButton('Shopping', const Color(0xFFFFB6B6)),
-                    _buildCategoryButton('Movies to watch', const Color(0xFFB19CD9)),
+                    _buildCategoryButton('Meeting', const Color(0xFFB19CD9)),
                   ],
                 ),
                 const SizedBox(height: 30),
@@ -99,26 +111,38 @@ class _DashboardPageState extends State<DashboardPage> {
                       )
                     : Column(
                         children: [
-                          ...upcomingTodos.map((todo) {
+                          ...upcomingTodos.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            var todo = entry.value;
                             return _buildTodoItem(
                               todo.title,
                               todo.time,
                               todo.isCompleted,
-                              () {
+                              () async {
+                                todo.isCompleted = !todo.isCompleted;
+                                await StorageService.updateTodo(index, todo);
                                 setState(() {
-                                  todo.isCompleted = !todo.isCompleted;
+                                  upcomingTodos = StorageService.getAllTodos();
                                 });
                               },
                             );
-                          }).toList(),
-                          ...dueItems.map((due) {
+                          }),
+                          ...dueItems.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            var due = entry.value;
                             return _buildTodoItem(
                               due.title,
                               due.dueDate,
-                              false,
-                              () {},
+                              due.isCompleted,
+                              () async {
+                                due.isCompleted = !due.isCompleted;
+                                await StorageService.updateDue(index, due);
+                                setState(() {
+                                  dueItems = StorageService.getAllDues();
+                                });
+                              },
                             );
-                          }).toList(),
+                          }),
                         ],
                       ),
                 const SizedBox(height: 25),
@@ -170,7 +194,7 @@ class _DashboardPageState extends State<DashboardPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -213,7 +237,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildTodoItem(String title, String time, bool isCompleted, VoidCallback onTap) {
+  Widget _buildTodoItem(
+    String title,
+    String time,
+    bool isCompleted,
+    VoidCallback onTap,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -226,10 +255,14 @@ class _DashboardPageState extends State<DashboardPage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isCompleted ? const Color(0xFF43E97B) : Colors.grey[300]!,
+                  color: isCompleted
+                      ? const Color(0xFF43E97B)
+                      : Colors.grey[300]!,
                   width: 2,
                 ),
-                color: isCompleted ? const Color(0xFF43E97B) : Colors.transparent,
+                color: isCompleted
+                    ? const Color(0xFF43E97B)
+                    : Colors.transparent,
               ),
               child: isCompleted
                   ? const Icon(Icons.check, size: 16, color: Colors.white)
@@ -247,13 +280,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
           ),
-          Text(
-            time,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[400],
-            ),
-          ),
+          Text(time, style: TextStyle(fontSize: 12, color: Colors.grey[400])),
           const SizedBox(width: 8),
           Icon(Icons.chevron_right, color: Colors.grey[300], size: 20),
         ],
@@ -272,14 +299,10 @@ class _DashboardPageState extends State<DashboardPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF43E97B).withOpacity(0.1),
+                  color: const Color(0xFF43E97B).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: const Color(0xFF43E97B),
-                ),
+                child: Icon(icon, size: 20, color: const Color(0xFF43E97B)),
               ),
               const SizedBox(width: 12),
               Text(
@@ -326,17 +349,13 @@ class _DashboardPageState extends State<DashboardPage> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF43E97B).withOpacity(0.3),
+              color: const Color(0xFF43E97B).withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: const Icon(
-          Icons.add,
-          size: 26,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.add, size: 26, color: Colors.white),
       ),
     );
   }
@@ -447,14 +466,10 @@ class _DashboardPageState extends State<DashboardPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
+              child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 15),
             Expanded(
@@ -472,10 +487,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
               ),
