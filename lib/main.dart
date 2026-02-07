@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'screens/dashboard_page.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'screens/splash_screen.dart';
+import 'services/storage_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await StorageService.init();
   runApp(const MyApp());
 }
 
@@ -13,10 +17,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Poppins',
+        textTheme: GoogleFonts.poppinsTextTheme(),
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       ),
-      home: const DashboardPage(userName: 'User', userEmail: null),
+      home: const SplashScreen(),
     );
   }
 }
