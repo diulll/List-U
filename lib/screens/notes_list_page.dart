@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/note_item.dart';
+import '../services/storage_service.dart';
 import 'add_note_page.dart';
 
 class NotesListPage extends StatefulWidget {
@@ -28,14 +29,13 @@ class _NotesListPageState extends State<NotesListPage> {
   void _addNewNote() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddNotePage(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddNotePage()),
     );
 
     if (result != null && result is NoteItem) {
+      await StorageService.addNote(result);
       setState(() {
-        _items.add(result);
+        _items = StorageService.getAllNotes();
       });
       widget.onUpdate(_items);
     }
@@ -72,10 +72,7 @@ class _NotesListPageState extends State<NotesListPage> {
                   const SizedBox(height: 20),
                   Text(
                     'No notes yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey[400]),
                   ),
                 ],
               ),
@@ -129,9 +126,10 @@ class _NotesListPageState extends State<NotesListPage> {
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () {
+                onPressed: () async {
+                  await StorageService.deleteNote(index);
                   setState(() {
-                    _items.removeAt(index);
+                    _items = StorageService.getAllNotes();
                   });
                   widget.onUpdate(_items);
                 },
@@ -143,10 +141,7 @@ class _NotesListPageState extends State<NotesListPage> {
             item.content,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 10),
           Row(
@@ -155,10 +150,7 @@ class _NotesListPageState extends State<NotesListPage> {
               const SizedBox(width: 5),
               Text(
                 item.date,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ],
           ),
