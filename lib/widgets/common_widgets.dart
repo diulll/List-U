@@ -12,7 +12,7 @@ Widget buildGradientButton({
       borderRadius: BorderRadius.circular(30),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF43E97B).withOpacity(0.3),
+          color: const Color(0xFF43E97B).withValues(alpha: 0.3),
           blurRadius: 15,
           offset: const Offset(0, 8),
         ),
